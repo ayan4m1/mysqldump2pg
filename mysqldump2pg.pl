@@ -15,18 +15,27 @@ SET backslash_quote = 'on';
 EndHeader
 ;
 
+print "Prepending header\n";
 $file = "$header$file";
-$fileLen = length($file);
-print "Loaded document with $fileLen characters.\n";
 
 print "Making edits...\n";
+
+# fix comments
 $file =~ s/^#/--/mg;
-$file =~ s/^UNLOCK TABLES;$/-- UNLOCK TABLES;/mg;
-$file =~ s/^LOCK TABLES "(.*)" WRITE;$/-- LOCK TABLES "$1" WRITE;/mg;
-$file =~ s/(big|tiny|small)*int(\([0-9]+\)){0,1}( unsigned){0,1}/$1int/g;
+
+# replace escaped quotes
 $file =~ s/\\'/''/g;
+
+# comment out table lock/unlocks
+$file =~ s/^unlock tables;$/-- unlock tables;/img;
+$file =~ s/^lock tables "(.*)" write;$/-- lock tables "$1" write;/img;
+
+# data types
+$file =~ s/(big|tiny|small)*int(\([0-9]+\)){0,1}( unsigned){0,1}/$1int/ig;
 $file =~ s/datetime/timestamp/ig;
 $file =~ s/(.*)double (default|not null)(.*),/$1double precision $2$3,/ig;
+
+# enable escape sequence parsing in strings
 $file =~ s/('[^'\\]*(?:\\.[^'\\]*)+')/E'$1'/g;
 
 print "Warning: You have auto_increment columns in this schema.\n"
@@ -41,5 +50,3 @@ print "Warning: You will need to change KEY $1 ($2) to create index on <table> (
 print "Writing final file...\n";
 write_file("$path.out", \$file);
 
-print "Ended run\n";
-exit(0);
