@@ -26,9 +26,18 @@ $file =~ s/^#/--/mg;
 # replace escaped quotes
 $file =~ s/\\'/''/g;
 
+# replace backticks with double quotes
+$file =~ s/`/"/g;
+
+# strip engine/charset from end of create table
+$file =~ s/^\s*\)\s+(engine|default|character).*$/);/img;
+
 # comment out table lock/unlocks
 $file =~ s/^unlock tables;$/-- unlock tables;/img;
 $file =~ s/^lock tables "(.*)" write;$/-- lock tables "$1" write;/img;
+
+# comment out data dictionary comments
+$file =~ s/^(.*) comment [\'\"](.*)[\'\"],/$1, -- $2/img;
 
 # data types
 $file =~ s/(big|tiny|small)*int(\([0-9]+\)){0,1}( unsigned){0,1}/$1int/ig;
