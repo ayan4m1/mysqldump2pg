@@ -23,9 +23,6 @@ print "Making edits...\n";
 # fix comments
 $file =~ s/^#/--/mg;
 
-# replace escaped quotes
-$file =~ s/\\'/''/g;
-
 # replace backticks with double quotes
 $file =~ s/`/"/g;
 
@@ -45,7 +42,10 @@ $file =~ s/datetime/timestamp/ig;
 $file =~ s/(.*)double (default|not null)(.*),/$1double precision $2$3,/ig;
 
 # enable escape sequence parsing in strings
-$file =~ s/('[^'\\]*(?:\\.[^'\\]*)+')/E'$1'/g;
+$file =~ s/('[^'\\]*(?:\\.[^'\\]*)+')/E$1/g;
+
+# replace escaped quotes
+$file =~ s/\\'/''/g;
 
 print "Warning: You have auto_increment columns in this schema.\n"
 	if ($file =~ /auto_increment/);
